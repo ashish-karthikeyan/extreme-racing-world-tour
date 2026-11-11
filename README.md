@@ -1,6 +1,8 @@
 # Extreme Racing: World Tour
 
-A browser racing game: dodge traffic in an open-wheel race car on a world tour through 22 cities. This is the **3D** version (branch `3D`), built with [Three.js](https://threejs.org) and free CC0 models (see [CREDITS.md](CREDITS.md)). The finished 2D game lives on the `2D` branch, and this version falls back to its 2D renderer by itself when a browser has no WebGL 2.
+A browser racing game: dodge traffic in an open-wheel race car on a world tour through 22 cities. Built with Three.js and free CC0 models (see CREDITS.md). It falls back to a 2D renderer by itself when a browser has no WebGL 2.
+
+**Play it:** https://ashish-karthikeyan.github.io/extreme-racing-world-tour/
 
 ## Run it
 
