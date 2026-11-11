@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>model inspector</title>
+<script type="importmap">{ "imports": { "three": "../lib/three/three.module.min.js", "three/addons/": "../lib/three/addons/" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+// usage: tools/inspect.html?m=race/raceCarRed.glb  prints the node tree, materials and bounding boxes to the console
+const m = new URLSearchParams(location.search).get("m");
+const g = await new GLTFLoader().loadAsync("../assets/models/" + m);
+g.scene.updateMatrixWorld(true);
+const out = [];
+g.scene.traverse(o => {
+  const b = new THREE.Box3().setFromObject(o), s = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+  out.push(`${o.type} "${o.name}" pos=(${o.position.toArray().map(v => v.toFixed(2))}) rotY=${o.rotation.y.toFixed(2)} mat=${o.material ? (o.material.name || "?") : "-"} size=(${s.toArray().map(v => v.toFixed(2))}) center=(${c.toArray().map(v => v.toFixed(2))})`);
+});
+console.log("INSPECT\n" + out.join("\n"));
+document.body.textContent = out.join("\n");
+</script>

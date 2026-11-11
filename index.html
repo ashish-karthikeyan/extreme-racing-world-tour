@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description"
+    content="Extreme Racing: World Tour. Race through 22 world cities in a free browser racing game: dodge traffic, chain near misses, fire nitro and earn 3 stars in every city.">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Extreme Racing: World Tour</title>
+  <link id="favicon" rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/garage.css">
+  <!-- CrazyGames' SDK: js/crazygames.js uses it only on CrazyGames. Anywhere else, or if it fails to load, the game doesn't need it. -->
+  <script async id="crazysdk" src="https://sdk.crazygames.com/crazygames-sdk-v3.js" onerror="this.dataset.failed = 1"></script>
+</head>
+
+<body>
+  <div id="loading" hidden>
+    <div class="logo">EXTREME<br>RACING</div>
+    <div class="bar">
+      <div id="loadfill"></div>
+    </div>
+    <div id="loadtip">Loading...</div>
+  </div>
+  <div id="stage"><canvas id="gl"></canvas><canvas id="game" width="400" height="480" tabindex="0"></canvas></div>
+  <input id="songInput" type="file" accept="audio/*" multiple hidden>
+  <!-- The import map lets module code say: import ... from "three" (no build step, no CDN). -->
+  <script type="importmap">
+{ "imports": { "three": "./lib/three/three.module.min.js", "three/addons/": "./lib/three/addons/" } }
+</script>
+  <script>
+    /* The game waits (on its title screen) while the 3D models load. If that stalls, or this browser cannot run the 3D code, give up and play in 2D instead. */
+    if (location.protocol === "file:") console.info("Extreme Racing: opened as a plain file, so the 3D version is off. Use Live Server for 3D.");
+    window.NO3D = new URLSearchParams(location.search).has("2d") || /(^|[?&])dev=engine/.test(location.search); /* ?2d, or the engine lab (no graphics) */
+    window.R3D_PENDING = !window.NO3D && location.protocol !== "file:"; window.R3D_BOOT = 0; /* (opened as a plain file: browsers block the 3D code, so play in 2D straight away) */ /* boot.js sets this to Date.now() each time it makes progress */
+    if (window.R3D_PENDING) document.write("<style>#loading[hidden]{display:flex}</style>"); /* show the loading screen only when we will really load 3D */
+    (function () {
+      var t0 = Date.now(); setTimeout(function watch() {
+        if (!window.R3D_PENDING) return;
+        var now = Date.now();
+        if (window.SDK_WAIT) t0 = now; /* (waiting for CrazyGames' answer doesn't count) */
+        if (window.R3D_BOOT ? now - window.R3D_BOOT > 20000 : now - t0 > 12000) { window.R3D_PENDING = false; if (window.disable3D) window.disable3D("3D loading stalled"); if (typeof crazy !== "undefined") crazy.loaded(); var l = document.getElementById("loading"); if (l) l.remove(); }
+        else setTimeout(watch, 1500);
+      }, 1500);
+    })();
+  </script>
+  <!-- The game code is split into plain script files that run in this order and share one scope. js/crazygames.js starts them once it
+       knows where the save lives (on CrazyGames or in this browser), then the 3D renderer's module. -->
+  <script src="js/crazygames.js"></script>
+  <script>
+    crazy.boot([
+      "js/data/config.js", "js/data/helpers.js", "js/data/teams.js", "js/data/cities.js", "js/data/worldmap.js", "js/data/tuning.js", "js/data/save.js",
+      "js/audio/sound.js", "js/audio/music.js",
+      "js/sim/state.js", "js/sim/world.js", "js/ui/menus.js", "js/sim/stages.js", "js/sim/effects.js", "js/sim/gameplay.js", "js/sim/tutorial.js",
+      "js/ui/devices.js", "js/ui/glass.js", "js/ui/screenfx.js", "js/ui/controller.js", "js/sim/update.js",
+      "js/render2d/tiles.js", "js/render2d/cars.js", "js/render2d/scenery.js", "js/render2d/topdown.js", "js/render2d/views3d.js", "js/render2d/post.js",
+      "js/ui/hud.js", "js/ui/garage.js", "js/ui/hints.js", "js/ui/input.js", "js/ui/enginelab.js", "js/main.js",
+    ], "js/render3d/boot.js");
+  </script>
+</body>
+
+</html>

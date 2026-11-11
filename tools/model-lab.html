@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><base href="../"><title>model lab</title>
+<style>html,body{margin:0;background:#222;overflow:hidden}</style>
+<script type="importmap">{ "imports": { "three": "./lib/three/three.module.min.js", "three/addons/": "./lib/three/addons/" } }</script>
+<script type="module">
+// A little studio for checking the downloaded models (glTF with meshopt and WebP) under the game's real sky lighting.
+//   tools/model-lab.html?m=street/barrier,street/bin&h=2&dist=6&el=8&sky=clear&w=1280&h=720
+//   m = model paths under assets/models (no .glb), laid out in a row, each scaled to `size` tall (0 = real size); prints triangles and size per model
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+import { loadSky, skyOf } from "./js/render3d/env.js";
+const q = new URLSearchParams(location.search), names = (q.get("m") || "street/barrier").split(","), size = +(q.get("size") || 0), gap = +(q.get("gap") || 2.5);
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(+(q.get("w") || 1280), +(q.get("hh") || 720)); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = true;
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(35, renderer.domElement.width / renderer.domElement.height, 0.05, 500);
+await loadSky(renderer, q.get("sky") || "midday"); const sky = skyOf(q.get("sky") || "midday"); scene.environment = sky.env; scene.background = sky.tex; scene.environmentIntensity = 0.6;
+const sun = new THREE.DirectionalLight(0xfff0dd, 3.5); sun.position.set(-4, 8, 6); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20 }); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 0.9 })); ground.receiveShadow = true; scene.add(ground);
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder); let x = 0; const info = [];
+for (const n of names) {
+  const g = await loader.loadAsync(`assets/models/${n}.glb`), o = g.scene; let tris = 0, mats = new Set();
+  o.traverse(c => { if (c.isMesh) { c.castShadow = c.receiveShadow = true; tris += (c.geometry.index ? c.geometry.index.count : c.geometry.attributes.position.count) / 3; mats.add(c.material); } });
+  const b = new THREE.Box3().setFromObject(o), s = b.getSize(new THREE.Vector3()); const k = size ? size / s.y : 1; o.scale.setScalar(k);
+  o.position.set(x + s.x * k / 2, -b.min.y * k, -b.getCenter(new THREE.Vector3()).z * k); x += s.x * k + gap; scene.add(o);
+  info.push(`${n}: ${Math.round(tris)} tris, ${mats.size} materials, size ${s.toArray().map(v => v.toFixed(2)).join(" x ")}`);
+}
+console.log("MODELS\n" + info.join("\n"));
+const cx = (x - gap) / 2, dist = +(q.get("dist") || Math.max(4, x * 0.9)), el = +(q.get("el") || 10) * Math.PI / 180;
+cam.position.set(cx + dist * 0.25, Math.sin(el) * dist + 0.6, Math.cos(el) * dist); cam.lookAt(cx, +(q.get("ly") || 0.6), 0);
+renderer.setAnimationLoop(() => renderer.render(scene, cam));
+</script>

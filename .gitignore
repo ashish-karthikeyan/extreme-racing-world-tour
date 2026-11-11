@@ -1,0 +1,11 @@
+# the release folder: the upload zip, its build copy and the store images stay out of git (tools/build-release.ps1 remakes them);
+# only the two text files are kept: the upload guide and the store listing
+release/*
+!release/HOW-TO-UPLOAD.md
+!release/store/
+release/store/*
+!release/store/listing.md
+*.zip
+
+# test screenshots (headless browser runs)
+.screenshots/

@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>builder test</title>
+<script type="importmap">{ "imports": { "three": "../lib/three/three.module.min.js", "three/addons/": "../lib/three/addons/" } }</script>
+<pre id="out">running...</pre>
+<script type="module">
+// Builds every landmark and prop once and reports any that throws (a bug in one builder would otherwise only show up when that landmark appears in a race).
+import { makeLandmark, LANDMARK_KEYS } from "../js/render3d/landmarks.js";
+import { makeProp, PROP_KEYS } from "../js/render3d/props.js";
+const out = []; let bad = 0;
+for (const k of LANDMARK_KEYS) { try { const g = makeLandmark(k, 8); let n = 0; g.traverse(() => n++); out.push(`ok landmark ${k} (${n} nodes)`); } catch (e) { bad++; out.push(`FAIL landmark ${k}: ${e.message}`); } }
+for (const k of PROP_KEYS) { try { const g = makeProp(k); let n = 0; g.traverse(() => n++); out.push(`ok prop ${k} (${n} nodes)`); } catch (e) { bad++; out.push(`FAIL prop ${k}: ${e.message}`); } }
+out.push(`DONE ${LANDMARK_KEYS.length} landmarks, ${PROP_KEYS.length} props, ${bad} failures`);
+document.getElementById("out").textContent = out.join("\n");
+</script>
